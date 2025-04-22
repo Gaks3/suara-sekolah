@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import Navbar from "../../components/ui/navbar"
+import Navbar from "../../components/navbar"
 
 const faqData = [
   {
