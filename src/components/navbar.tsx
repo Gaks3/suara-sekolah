@@ -19,7 +19,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex space-x-6">
-          <Link href="/tentang">
+          <Link href="/tentang-kami">
             <span className="text-gray-500 font-semibold hover:text-blue-600 transition cursor-pointer">
               Tentang Kami
             </span>
