@@ -1,8 +1,8 @@
 const Footer = () => {
   return (
-    <footer className="bg-white text-black py-4">
+    <footer className="bg-white text-gray-700 py-4">
       <div className="flex flex-col items-center justify-center max-w-7xl mx-auto px-4">
-      <div className="flex space-x-4 mb-4">
+      <div className="flex space-x-4 font-semibold mb-4">
           <a href="/" className="text-BLACK text-1xl hover:text-blue-600 transition">PRIVACY</a>
           <a href="/" className="text-BLACK text-1xl hover:text-blue-600 transition">BERANDA</a>
           <a href="/" className="text-BLACK text-1xl hover:text-blue-600 transition">KETENTUAN LAYANAN</a>

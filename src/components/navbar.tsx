@@ -33,12 +33,12 @@ const Navbar = () => {
 
         <div className="hidden md:flex space-x-4">
           <Link href="/login">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
+            <button className="bg-blue-600 text-sm text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
               Masuk
             </button>
           </Link>
           <Link href="/register">
-            <button className="border-2 border-blue-700 bg-white hover:text-white text-blue-700 px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            <button className="border-2 text-sm border-blue-700 bg-white hover:text-white text-blue-700 px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
               Daftar
             </button>
           </Link>
