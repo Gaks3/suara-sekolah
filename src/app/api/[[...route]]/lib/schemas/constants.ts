@@ -12,3 +12,7 @@ export const forbiddenSchema = createMessageObjectSchema(
 export const badRequestSchema = createMessageObjectSchema(
   HttpStatusPhrases.BAD_REQUEST
 )
+
+export const unauthorizeSchema = createMessageObjectSchema(
+  HttpStatusPhrases.UNAUTHORIZED
+)
