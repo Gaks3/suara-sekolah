@@ -2,10 +2,7 @@ import { createRoute, z } from "@hono/zod-openapi"
 import * as HTTPStatusCodes from "stoker/http-status-codes"
 import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers"
 
-import {
-  UserRoleSchema,
-  UserSchema,
-} from "../../../../../../prisma/generated/zod/index"
+import { UserSchema } from "../../../../../../prisma/generated/zod/index"
 import { authMiddleware } from "../../middlewares/auth"
 import StringIdParamsSchema from "../../lib/schemas/string-id-params-schema"
 import {
@@ -21,7 +18,7 @@ export const list = createRoute({
   path: "/users",
   method: "get",
   tags,
-  middleware: authMiddleware(UserRoleSchema.Enum.ADMIN),
+  middleware: authMiddleware("admin"),
   responses: {
     [HTTPStatusCodes.OK]: jsonContent(
       z.object({ data: z.array(UserSchema) }),
@@ -55,7 +52,7 @@ export const create = createRoute({
   request: {
     body: jsonContentRequired(insertUserSchema, "The user to create"),
   },
-  middleware: authMiddleware("ADMIN"),
+  middleware: authMiddleware("admin"),
   responses: {
     [HTTPStatusCodes.CREATED]: jsonContent(
       z.object({ data: UserSchema }),
