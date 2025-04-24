@@ -39,7 +39,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       HTTPStatusCodes.NOT_FOUND
     )
 
-  if (id !== user.id && !hasRole(user, "ADMIN"))
+  if (id !== user.id && !hasRole(user, "admin"))
     return c.json(
       { message: HTTPStatusPhrases.FORBIDDEN },
       HTTPStatusCodes.FORBIDDEN
@@ -104,7 +104,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
       HTTPStatusCodes.NOT_FOUND
     )
 
-  if (id !== session.id && !hasRole(session, "ADMIN"))
+  if (id !== session.id && !hasRole(session, "admin"))
     return c.json(
       { message: HTTPStatusPhrases.FORBIDDEN },
       HTTPStatusCodes.FORBIDDEN
@@ -135,7 +135,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const { id } = c.req.valid("param")
   const session = c.get("user")!
 
-  if (id !== session.id && !hasRole(session, "ADMIN"))
+  if (id !== session.id && !hasRole(session, "admin"))
     return c.json(
       { message: HTTPStatusPhrases.FORBIDDEN },
       HTTPStatusCodes.FORBIDDEN
