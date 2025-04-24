@@ -10,6 +10,7 @@ generator client {
 
 generator zod {
   provider = "zod-prisma-types"
+  output = "./generated/zod"
 }
 
 datasource db {
@@ -23,19 +24,25 @@ model User {
   name          String
   emailVerified Boolean
   image         String?
-  role          UserRole @default(USER)
+  phone         String?
+  nis           String?
+  nip           String?
+  role          UserRole @default(siswa)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   sessions Session[]
   accounts Account[]
+  reports Report[]
 
   @@map("user")
 }
 
 enum UserRole {
-  USER
-  ADMIN
+  siswa
+  guru
+  karyawan
+  admin
 }
 
 model Session {
@@ -83,4 +90,43 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Report {
+  id Int @id @default(autoincrement())
+  title String
+  content String
+  userId String
+  user User @relation(references: [id], fields: [userId])
+  anonym Boolean? @default(false)
+  image String?
+  category ReportCategory
+  status ReportStatus @default(VERIFICATION_PROCESS)
+  department ReportDepartment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ReportCategory {
+  COMPLAINT
+  ASPIRATION
+  INFORMATION_REQUEST
+}
+
+enum ReportStatus {
+  VERIFICATION_PROCESS
+  VERIFIED
+  FOLLOW_UP
+  COMPLETED
+}
+
+enum ReportDepartment {
+  GURU
+  TU
+  KESISWAAN
+  BK
+  KEPALA_SEKOLAH
+  BADAN_KEBERSIHAN
+  KEAMANAN
+  SARPRAS
 }
