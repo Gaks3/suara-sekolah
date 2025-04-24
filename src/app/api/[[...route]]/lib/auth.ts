@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { openAPI } from "better-auth/plugins"
+import { admin, openAPI } from "better-auth/plugins"
 
 import db from "./db"
 
@@ -17,7 +17,19 @@ export const auth = betterAuth({
       role: {
         type: "string",
       },
+      phone: {
+        type: "string",
+      },
+      nis: {
+        type: "string",
+      },
+      nip: {
+        type: "string",
+      },
+    },
+    deleteUser: {
+      enabled: true,
     },
   },
-  plugins: [openAPI()],
+  plugins: [openAPI(), admin()],
 })
