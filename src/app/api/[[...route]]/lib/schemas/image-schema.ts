@@ -17,5 +17,5 @@ export const imageSchema = z
     )}`,
   })
   .refine((file) => file.size <= MAX_FILE_SIZE, {
-    message: `File size must be less than 3MB.`,
+    message: `File size must be less than 5MB.`,
   })
