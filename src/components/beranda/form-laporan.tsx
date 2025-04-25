@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { CalendarIcon, Upload } from "lucide-react"
 import { format } from "date-fns"
@@ -17,35 +16,62 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+const classificationOptions = [
+  { id: "pengaduan", label: "Pengaduan" },
+  { id: "aspirasi", label: "Aspirasi" },
+  { id: "informasi", label: "Informasi" },
+]
+
 export default function FormLaporan() {
   const [date, setDate] = useState<Date>()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [selectedClassification, setSelectedClassification] = useState<string | null>(null)
+  const [department, setDepartment] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setSelectedFile(file)
-
-    if (file) {
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-    } else {
-      setPreviewUrl(null)
-    }
+    setPreviewUrl(file ? URL.createObjectURL(file) : null)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission logic here
-    console.log("Form submitted")
-
-    // Reset form after submission
-    const form = e.target as HTMLFormElement
-    form.reset()
-    setDate(undefined)
-    setSelectedFile(null)
-    setPreviewUrl(null)
-  }
+    e.preventDefault();
+  
+    const form = e.target as HTMLFormElement;
+  
+    // nilai tujuan
+    const department = form.tujuan?.value?.toUpperCase();
+  
+    const classificationMap: Record<string, string> = {
+      pengaduan: "COMPLAINT",
+      aspirasi: "ASPIRATION",
+      informasi: "INFORMATION",
+    };
+  
+    // tampil di console log
+    const dataToSend = {
+      category: classificationMap[selectedClassification ?? ""] ?? null,
+      status: "VERIFICATION_PROCESS",
+      department: department || null,
+      title: form.judul.value,
+      content: form.isi.value,
+      userId: "1", // data dumy
+      anonym: false, 
+      image: selectedFile ? selectedFile.name : null,
+    };
+  
+    // debug
+    console.log("Data yang akan dikirim ke API:", dataToSend);
+  
+    // reset form
+    form.reset();
+    setDate(undefined);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setSelectedClassification(null);
+  };
+  
 
   return (
     <Card className="w-full max-w-[600px] mx-auto border-2 mt-6 mb-6 md:mt-10 md:mb-10 px-2 sm:px-4 md:px-6">
@@ -55,29 +81,49 @@ export default function FormLaporan() {
         </CardTitle>
         <p className="text-xs pt-2 pb-2">
           Perhatikan Cara Menyampaikan Pengaduan Yang Baik dan Benar.{" "}
-          <span className="text-red-600 cursor-pointer ">Lihat Panduan!</span>{" "}
+          <span className="text-red-600 cursor-pointer">Lihat Panduan!</span>{" "}
         </p>
       </CardHeader>
+
       <CardContent className="px-3 sm:px-4 md:px-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="judul" className="text-black">
-              Judul Laporan
+            <Label htmlFor="klasifikasi" className="text-black">
+              Klasifikasi Laporan
             </Label>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {classificationOptions.map((option) => (
+                <div key={option.id} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id={`klasifikasi-${option.id}`}
+                    name="klasifikasi"
+                    value={option.id}
+                    checked={selectedClassification === option.id}
+                    onChange={() => setSelectedClassification(option.id)}
+                    className="accent-blue-600"
+                    required
+                  />
+                  <Label htmlFor={`klasifikasi-${option.id}`} className="text-sm font-normal cursor-pointer">
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="judul" className="text-black">Judul Laporan</Label>
             <Input id="judul" placeholder="Masukkan judul laporan" required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="isi" className="text-black">
-              Isi Laporan
-            </Label>
+            <Label htmlFor="isi" className="text-black">Isi Laporan</Label>
             <Textarea id="isi" placeholder="Masukkan isi laporan secara detail" className="min-h-[120px]" required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tanggal" className="text-black">
-              Tanggal
-            </Label>
+            <Label htmlFor="tanggal" className="text-black">Tanggal</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -95,11 +141,9 @@ export default function FormLaporan() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tujuan" className="text-black">
-              Tujuan
-            </Label>
-            <Select required>
-              <SelectTrigger id="tujuan">
+            <Label htmlFor="tujuan" className="text-black">Tujuan</Label>
+            <Select value={department || ""} onValueChange={(val) => setDepartment(val)} required>
+              <SelectTrigger>
                 <SelectValue placeholder="Pilih tujuan laporan" />
               </SelectTrigger>
               <SelectContent>
@@ -116,9 +160,7 @@ export default function FormLaporan() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="foto" className="text-black">
-              Upload Foto
-            </Label>
+            <Label htmlFor="foto" className="text-black">Upload Foto</Label>
             <div className="grid gap-4">
               <div className="flex items-center justify-center w-full">
                 <label
@@ -140,7 +182,7 @@ export default function FormLaporan() {
               {previewUrl && (
                 <div className="relative mt-2">
                   <img
-                    src={previewUrl || "/placeholder.svg"}
+                    src={previewUrl}
                     alt="Preview"
                     className="w-full h-auto max-h-48 object-contain rounded-lg"
                   />
@@ -163,7 +205,7 @@ export default function FormLaporan() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-blue-700 text-white hover:bg-blue-50">
+          <Button type="submit" className="w-full bg-blue-700 text-white hover:bg-blue-500">
             Kirim Laporan
           </Button>
         </form>
