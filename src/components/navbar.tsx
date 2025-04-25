@@ -32,12 +32,12 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex space-x-4">
-          <Link href="/login">
+          <Link href="/sign-in">
             <button className="bg-blue-600 text-sm text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
               Masuk
             </button>
           </Link>
-          <Link href="/register">
+          <Link href="/sign-up">
             <button className="border-2 text-sm border-blue-700 bg-white hover:text-white text-blue-700 px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
               Daftar
             </button>
@@ -99,7 +99,7 @@ const Navbar = () => {
                 </button>
               </div>
               <div className="flex flex-col p-4 space-y-6">
-                <Link href="/tentang" onClick={closeSidebar}>
+                <Link href="/tentang-kami" onClick={closeSidebar}>
                   <span className="block text-gray-600 hover:text-blue-600 transition cursor-pointer py-2">
                     Tentang Kami
                   </span>
@@ -110,12 +110,12 @@ const Navbar = () => {
                   </span>
                 </Link>
                 <div className="pt-4 border-t">
-                  <Link href="/login" onClick={closeSidebar}>
+                  <Link href="/sign-in" onClick={closeSidebar}>
                     <span className="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer text-center mb-3">
                       Login
                     </span>
                   </Link>
-                  <Link href="/register" onClick={closeSidebar}>
+                  <Link href="/sign-up" onClick={closeSidebar}>
                     <span className="block w-full border-2 border-blue-700 bg-white hover:text-white text-blue-700 rounded-lg py-2 hover:bg-blue-700 transition cursor-pointer text-center">
                       Register
                     </span>
