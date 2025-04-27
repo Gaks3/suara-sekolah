@@ -10,7 +10,7 @@ generator client {
 
 generator zod {
   provider = "zod-prisma-types"
-  output = "./generated/zod"
+  output   = "./generated/zod"
 }
 
 datasource db {
@@ -24,7 +24,7 @@ model User {
   name          String
   emailVerified Boolean
   image         String?
-  phone         String?
+  phone         String
   nis           String?
   nip           String?
   role          UserRole @default(siswa)
@@ -33,7 +33,7 @@ model User {
 
   sessions Session[]
   accounts Account[]
-  reports Report[]
+  reports  Report[]
 
   @@map("user")
 }
@@ -93,18 +93,18 @@ model Verification {
 }
 
 model Report {
-  id Int @id @default(autoincrement())
-  title String
-  content String
-  userId String
-  user User @relation(references: [id], fields: [userId])
-  anonym Boolean? @default(false)
-  image String?
-  category ReportCategory
-  status ReportStatus @default(VERIFICATION_PROCESS)
+  id         Int              @id @default(autoincrement())
+  title      String
+  content    String
+  userId     String
+  user       User             @relation(references: [id], fields: [userId])
+  anonym     Boolean?         @default(false)
+  image      String?
+  category   ReportCategory
+  status     ReportStatus     @default(VERIFICATION_PROCESS)
   department ReportDepartment
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 }
 
 enum ReportCategory {
