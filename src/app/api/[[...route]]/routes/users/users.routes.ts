@@ -1,18 +1,18 @@
-import { createRoute, z } from "@hono/zod-openapi"
-import * as HTTPStatusCodes from "stoker/http-status-codes"
-import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers"
+import { createRoute, z } from "@hono/zod-openapi";
+import * as HTTPStatusCodes from "stoker/http-status-codes";
+import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers";
 
-import { UserSchema } from "../../../../../../prisma/generated/zod/index"
-import { authMiddleware } from "../../middlewares/auth"
-import StringIdParamsSchema from "../../lib/schemas/string-id-params-schema"
+import { UserSchema } from "../../../../../../prisma/generated/zod/index";
+import { authMiddleware } from "../../middlewares/auth";
+import StringIdParamsSchema from "../../lib/schemas/string-id-params-schema";
 import {
   badRequestSchema,
   forbiddenSchema,
   notFoundSchema,
-} from "../../lib/schemas/constants"
-import { insertUserSchema } from "./users.schemas"
+} from "../../lib/schemas/constants";
+import { insertUserSchema, updateUserSchema } from "./users.schemas";
 
-const tags = ["Users"]
+const tags = ["Users"];
 
 export const list = createRoute({
   path: "/users",
@@ -25,7 +25,7 @@ export const list = createRoute({
       "The list of users"
     ),
   },
-})
+});
 
 export const getOne = createRoute({
   path: "/users/{id}",
@@ -43,7 +43,7 @@ export const getOne = createRoute({
     [HTTPStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "User not found"),
     [HTTPStatusCodes.FORBIDDEN]: jsonContent(forbiddenSchema, "Forbidden"),
   },
-})
+});
 
 export const create = createRoute({
   path: "/users",
@@ -63,7 +63,7 @@ export const create = createRoute({
       "The request is bad"
     ),
   },
-})
+});
 
 export const patch = createRoute({
   path: "/users/{id}",
@@ -74,7 +74,7 @@ export const patch = createRoute({
     body: {
       content: {
         "multipart/form-data": {
-          schema: insertUserSchema.partial(),
+          schema: updateUserSchema,
         },
       },
       required: true,
@@ -89,7 +89,7 @@ export const patch = createRoute({
     [HTTPStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "User not found"),
     [HTTPStatusCodes.FORBIDDEN]: jsonContent(forbiddenSchema, "Forbidden"),
   },
-})
+});
 
 export const remove = createRoute({
   path: "/users/{id}",
@@ -106,10 +106,10 @@ export const remove = createRoute({
     [HTTPStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "User not found"),
     [HTTPStatusCodes.FORBIDDEN]: jsonContent(forbiddenSchema, "Forbidden"),
   },
-})
+});
 
-export type ListRoute = typeof list
-export type GetOneRoute = typeof getOne
-export type CreateRoute = typeof create
-export type PatchRoute = typeof patch
-export type RemoveRoute = typeof remove
+export type ListRoute = typeof list;
+export type GetOneRoute = typeof getOne;
+export type CreateRoute = typeof create;
+export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;
