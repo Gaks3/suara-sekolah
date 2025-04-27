@@ -1,21 +1,22 @@
-"use client"
+"use client";
 
-import type { InferResponseType } from "hono"
-import type { ColumnDef } from "@tanstack/react-table"
-import { format } from "date-fns"
-import { UserRole } from "@prisma/client"
+import type { InferResponseType } from "hono";
+import type { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { UserRole } from "@prisma/client";
 
-import SortColumnHeader from "@/components/sort-column-header"
-import { Badge } from "@/components/ui/badge"
-import RoleFilterDropdown from "@/components/admin/users/role-filter-dropdown"
+import SortColumnHeader from "@/components/sort-column-header";
+import { Badge } from "@/components/ui/badge";
+import RoleFilterDropdown from "@/components/admin/users/role-filter-dropdown";
 
-import type { APIClient } from "@/lib/api-client"
-import { UnwrapArray } from "@/lib/types"
+import type { APIClient } from "@/lib/api-client";
+import { UnwrapArray } from "@/lib/types";
+import UserActionTable from "@/components/admin/users/user-action-table";
 // import UserActionTable from "./components/user-action-table"
 
 export type DataType = UnwrapArray<
   InferResponseType<typeof APIClient.api.users.$get, 200>["data"]
->
+>;
 
 export const columns: ColumnDef<DataType>[] = [
   {
@@ -39,6 +40,18 @@ export const columns: ColumnDef<DataType>[] = [
     enableColumnFilter: false,
   },
   {
+    accessorKey: "phone",
+    header: ({ column }) => <SortColumnHeader column={column} title="Phone" />,
+  },
+  {
+    accessorKey: "nis",
+    header: ({ column }) => <SortColumnHeader column={column} title="NIS" />,
+  },
+  {
+    accessorKey: "nip",
+    header: ({ column }) => <SortColumnHeader column={column} title="NIP" />,
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <SortColumnHeader column={column} title="Created At" />
@@ -51,7 +64,7 @@ export const columns: ColumnDef<DataType>[] = [
     cell: ({ row }) => <UserActionTable user={row.original} />,
     enableColumnFilter: false,
   },
-]
+];
 
 export const RoleBadge = ({ role }: { role: string }) => (
   <Badge
@@ -64,4 +77,4 @@ export const RoleBadge = ({ role }: { role: string }) => (
   >
     {role}
   </Badge>
-)
+);
