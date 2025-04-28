@@ -1,7 +1,7 @@
-import { z } from "zod"
+import { z } from "zod";
 
-import { ReportSchema } from "../../../../../../prisma/generated/zod"
-import { imageSchema } from "../../lib/schemas/image-schema"
+import { ReportSchema } from "../../../../../../prisma/generated/zod";
+import { imageSchema } from "../../lib/schemas/image-schema";
 
 export const listQueryParamsSchema = z.object({
   search: z
@@ -25,15 +25,14 @@ export const listQueryParamsSchema = z.object({
       },
       example: "desc",
     }),
-})
+});
 
-export const insertReportSchema = ReportSchema.omit(
-  {
-    createdAt: true, 
-    updatedAt: true, 
-    userId: true, 
-    id: true
-  }
-).extend({
+export const insertReportSchema = ReportSchema.omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  anonym: z.coerce.boolean(),
   image: imageSchema.optional(),
-})
+});

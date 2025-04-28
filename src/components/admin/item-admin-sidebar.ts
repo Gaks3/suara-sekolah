@@ -1,4 +1,4 @@
-import { HomeIcon, UsersRoundIcon } from "lucide-react"
+import { FlagIcon, HomeIcon, UsersRoundIcon } from "lucide-react";
 
 export const items = [
   {
@@ -11,4 +11,9 @@ export const items = [
     url: "/admin/users",
     icon: UsersRoundIcon,
   },
-]
+  {
+    title: "Reports",
+    url: "/admin/reports",
+    icon: FlagIcon,
+  },
+];
