@@ -3,20 +3,21 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { auth } from "@/app/api/[[...route]]/lib/auth";
-import { LogOut } from "lucide-react"; // Import ikon logout
 import { authClient } from "@/lib/auth-client";
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 
 interface NavbarProps {
   session: {
-    user: typeof auth.$Infer.Session.user;
-    session: typeof auth.$Infer.Session.session;
+    user: {
+      name: string;
+    };
   } | null;
 }
 
 const Navbar = ({ session }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false); // State untuk dropdown
   const pathname = usePathname();
   const router = useRouter();
 
@@ -27,11 +28,26 @@ const Navbar = ({ session }: NavbarProps) => {
     return pathname === path;
   };
 
+  const handleLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        credentials: "include",
+      },
+    });
+    router.push("/sign-in");
+  };
+
   return (
     <nav className="sticky top-0 z-40 w-full bg-white px-6 py-4 shadow-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.png" width={100} height={100} className="w-10 h-auto" alt="logo" />
+          <Image
+            src="/logo.png"
+            width={100}
+            height={100}
+            className="w-10 h-auto"
+            alt="logo"
+          />
           <span className="text-xl font-bold text-primary">Suara Sekolah</span>
         </Link>
 
@@ -57,38 +73,37 @@ const Navbar = ({ session }: NavbarProps) => {
               FAQ
             </span>
             {isActive("/faq") && (
-              <span className="absolute bottom-[-8px] left-0 w-full h-[3px] bg-primary rounded-full"></span>
+              <span className="absolute bottom-[-8px] left-0 w-full h-[3px] bg-primary  rounded-full"></span>
             )}
           </Link>
         </div>
 
-        <div className="hidden md:flex space-x-4 items-center">
-        <span className="text-gray-700 text-1xl font-semibold">
-          {session?.user?.name}
-        </span>
+        <div className="hidden md:flex space-x-4 items-center relative">
           {session?.user ? (
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">
+              <span className="text-gray-700 text-1xl font-semibold">
+                {session.user.name.split(" ")[0].toUpperCase()}
+              </span>
+              <div className="relative">
+              <div
+                className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold cursor-pointer"
+                onClick={() => setDropdownOpen(!dropdownOpen)} 
+              >
                 {session.user.name.charAt(0).toUpperCase()}
               </div>
-              <form
-                action={async () => {
-                  await authClient.signOut({
-                    fetchOptions: {
-                      credentials: "include",
-                    },
-                  });
 
-                  router.push("/sign-in");
-                }}
-              >
-                <button
-                  type="submit"
-                  className="flex items-center text-gray-700 hover:text-primary transition"
-                >
-                  <LogOut className="w-5 h-5 mr-2" />
-                </button>
-              </form>
+              {dropdownOpen && (
+                <div className="absolute top-12 right-0 shadow-lg rounded-lg border">
+                  <button
+                    onClick={handleLogout}
+                    className="w-auto text-left text-white bg-red-600 text-sm font-semibold px-4 py-2 rounded-md hover:bg-red-700 transition cursor-pointer flex items-center gap-2"
+                  >
+                    Logout
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              </div>
             </div>
           ) : (
             <>
@@ -106,7 +121,6 @@ const Navbar = ({ session }: NavbarProps) => {
           )}
         </div>
 
-        {/* Sidebar Mobile */}
         <div className="md:hidden flex items-center">
           <button
             onClick={toggleSidebar}
@@ -155,49 +169,63 @@ const Navbar = ({ session }: NavbarProps) => {
                 </button>
               </div>
               <div className="flex flex-col p-4 space-y-6">
-                <Link
-                  href="/tentang-kami"
-                  onClick={closeSidebar}
-                  className="relative"
-                >
-                  <span
-                    className={`block text-gray-600 hover:text-primary transition cursor-pointer py-2 ${
-                      isActive("/tentang-kami")
-                        ? "text-primary font-medium"
-                        : ""
-                    }`}
-                  >
-                    Tentang Kami
-                  </span>
-                </Link>
-                <Link href="/faq" onClick={closeSidebar} className="relative">
-                  <span
-                    className={`block text-gray-600 hover:text-primary transition cursor-pointer py-2 ${
-                      isActive("/faq") ? "text-primary font-medium" : ""
-                    }`}
-                  >
-                    FAQ
-                  </span>
-                </Link>
-                <div className="pt-4 border-t">
-                  {session?.user ? (
-                    <span className="block w-full text-center text-gray-700 font-semibold">
-                      {session.user.name}
+                {session?.user ? (
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center font-bold text-2xl">
+                      {session.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-gray-700 text-lg font-semibold">
+                      {session.user.name.toUpperCase()}
                     </span>
-                  ) : (
-                    <>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full font-semibold flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition cursor-pointer text-center"
+                    >
+                      Logout
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="py-0">
                       <Link href="/sign-in" onClick={closeSidebar}>
                         <span className="block w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary transition cursor-pointer text-center mb-3">
                           Login
                         </span>
                       </Link>
                       <Link href="/sign-up" onClick={closeSidebar}>
-                        <span className="block w-full border-2 border-blue-700 bg-white hover:text-white text-primary rounded-lg py-2 hover:bg-primary transition cursor-pointer text-center">
+                        <span className="block w-full border-2 border-primary bg-white hover:text-white text-primary rounded-lg py-2 hover:bg-primary transition cursor-pointer text-center">
                           Register
                         </span>
                       </Link>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
+                <div className="py-0">
+                  <Link
+                    href="/tentang-kami"
+                    onClick={closeSidebar}
+                    className="relative"
+                  >
+                    <span
+                      className={`block text-gray-600 hover:text-primary transition cursor-pointer py-2 ${
+                        isActive("/tentang-kami")
+                          ? "text-primary font-medium"
+                          : ""
+                      }`}
+                    >
+                      Tentang Kami
+                    </span>
+                  </Link>
+                  <Link href="/faq" onClick={closeSidebar} className="relative">
+                    <span
+                      className={`block text-gray-600 hover:text-primary transition cursor-pointer py-2 ${
+                        isActive("/faq") ? "text-primary font-medium" : ""
+                      }`}
+                    >
+                      FAQ
+                    </span>
+                  </Link>
                 </div>
               </div>
             </div>
