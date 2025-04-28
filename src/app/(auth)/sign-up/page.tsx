@@ -10,83 +10,102 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formSchema } from "@/lib/auth-schema"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AtSign, KeyRound, UserPlus, Eye, EyeOff, User, UserCog } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { authClient } from "@/lib/auth-client"
+import { signUpSchema } from "@/app/api/[[...route]]/routes/users/users.schemas"
+import { UserRole } from "@prisma/client"
+import { APIClient } from "@/lib/api-client"
+import { toast } from "sonner"
+import { PasswordInput } from "@/components/password-input"
+import { PhoneInput } from "@/components/phone-input"
+
+type SignUpSchema = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  
+  const roles = Object.values(UserRole);
+  roles.pop()
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    mode: "onBlur",
-    shouldFocusError: false,
+  const form = useForm<SignUpSchema>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
-      name: "",
       email: "",
+      name: "",
       password: "",
-      role: "siswa",
+      phone: "",
+      role: "karyawan",
     },
-  })
+  });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setErrorMessage(null)
-    setSuccessMessage(null)
-
+  const onSubmit = async (values: SignUpSchema) => {
     try {
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email,
-          password: values.password,
-          role: values.role,
-          image: null,
-        }),
-      })
+      const formattedValues = {...values}
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        let errorMsg = data.message || "Registration failed"
-
-        if (errorMsg.includes("already exists") || errorMsg.includes("duplicate")) {
-          errorMsg = "This email is already registered. Please use another email."
-        }
-
-        setErrorMessage(errorMsg)
-        form.setError("email", {
-          type: "manual",
-          message: errorMsg,
-        })
-        return
+      if(values.role === "karyawan") {
+        delete formattedValues.nis;
+        delete formattedValues.nip;
+      } else if(values.role === "siswa") {
+        delete formattedValues.nip
+      } else if(values.role === "guru") {
+        delete formattedValues.nis
       }
 
-      form.reset()
-      setSuccessMessage("Sign up successful!")
+      const {data, error} = await authClient.signUp.email({
+        ...values,
+      }, {
+        onSuccess: () => {
+          form.reset();
+          toast.success("Sign up success");
+          router.push("/");
+        },
+        onError: ({ error }) => {
+          let errorMessage = error.message;
 
-      setTimeout(() => {
-        router.push("/sign-in")
-      }, 2000)
+          if (
+            errorMessage.includes("already exists") ||
+            errorMessage.includes("duplicate")
+          ) {
+            errorMessage =
+              "This email already used, please enter another email.";
+          }
+
+          toast.error("Sign up failed", {
+            description: errorMessage,
+          });
+
+          form.setError("email", {
+            type: "manual",
+            message: errorMessage,
+          });
+        },
+      },
+      )
+
     } catch (error) {
-      setErrorMessage("An unexpected error occurred. Please try again.")
-      console.error("Registration error:", error)
-    } finally {
-      setIsSubmitting(false)
+      console.log(error);
+      toast.error("Failed to create user");
     }
-  }
+  };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+  const selectedRole = form.watch("role");
+
+  useEffect(() => {
+    if (selectedRole === "guru") {
+      form.setValue("nip", "");
+      form.resetField("nis")
+    }
+      if (selectedRole === "siswa") {
+        form.setValue("nis", "");
+        form.resetField("nip")
+      }
+  }, [selectedRole, form]);
+
+  useEffect(() => {
+    console.log(form.formState.errors)
+  }, [form.formState.errors])
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -96,7 +115,7 @@ export default function SignUpPage() {
           <CardTitle className="text-2xl font-bold text-center">Daftar</CardTitle>
           <CardDescription className="text-center text-gray-500">Buat Akun Anda Untuk Melapor!</CardDescription>
         </CardHeader>
-        {errorMessage && (
+        {/* {errorMessage && (
           <div className="mx-8 md:mx-12 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
             {errorMessage}
           </div>
@@ -106,124 +125,147 @@ export default function SignUpPage() {
           <div className="mx-8 md:mx-12 p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm">
             {successMessage}
           </div>
-        )}
+        )} */}
 
         <CardContent className="space-y-6 pt-4 px-8 md:px-12">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Nama</FormLabel>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <FormControl>
-                        <Input
-                          placeholder="Masukan Nama Anda"
-                          className="pl-10 py-2 bg-transparent border-gray-200 rounded-lg focus:ring-primary focus:border-primary"
-                          {...field}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} autoComplete="name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} autoComplete="email" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <PasswordInput
+                      {...field}
+                      placeholder="Your strong password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <PhoneInput {...field} defaultCountry="ID" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          className="w-full capitalize"
+                          placeholder="Select an role"
                         />
-                      </FormControl>
-                    </div>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {roles.map((value, index) => (
+                        <SelectItem
+                          key={index}
+                          value={value}
+                          className="capitalize"
+                        >
+                          {value.split(" ").map((value) => value.at(0)?.toUpperCase() + value.slice(1)).join(" ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {selectedRole === "guru" && (
               <FormField
                 control={form.control}
-                name="email"
+                name="nip"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Email</FormLabel>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <AtSign className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <FormControl>
-                        <Input
-                          placeholder="Masukan email Anda"
-                          className="pl-10 py-2 bg-transparent border-gray-200 rounded-lg focus:ring-primary focus:border-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormMessage className="text-red-500" />
+                    <FormLabel>NIP</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        autoComplete="nip"
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-
+            )}
+            {selectedRole === "siswa" && (
               <FormField
                 control={form.control}
-                name="role"
+                name="nis"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Role</FormLabel>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <UserCog className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="pl-10 py-2 bg-transparent border-gray-200 rounded-lg focus:ring-primary focus:border-primary">
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="siswa">Siswa</SelectItem>
-                          <SelectItem value="guru">Guru</SelectItem>
-                          <SelectItem value="karyawan">Karyawan</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <FormMessage className="text-red-500" />
+                    <FormLabel>NIS</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        type="number"
+                        autoComplete="nis"
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Password</FormLabel>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <KeyRound className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <FormControl>
-                        <Input
-                          placeholder="Masukan password Anda"
-                          type={showPassword ? "text" : "password"}
-                          className="pl-10 pr-10 py-2 bg-transparent border-gray-200 rounded-lg focus:ring-primary focus:border-primary"
-                          {...field}
-                        />
-                      </FormControl>
-                      <button
-                        type="button"
-                        onClick={togglePasswordVisibility}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {!showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-
-              <Button
+            )}
+            <Button
                 type="submit"
                 className="w-full py-2.5 md:py-3 rounded-lg bg-blue-700 hover:bg-blue-700/90 text-white font-medium flex items-center justify-center"
-                disabled={isSubmitting}
+                disabled={form.formState.isSubmitting}
               >
-                {isSubmitting ? (
+                {form.formState.isSubmitting ? (
                   <div className="flex items-center">Signing Up...</div>
                 ) : (
                   <>
@@ -231,8 +273,8 @@ export default function SignUpPage() {
                   </>
                 )}
               </Button>
-            </form>
-          </Form>
+          </form>
+        </Form>
         </CardContent>
 
         <CardFooter className="flex justify-center px-8 py-6">

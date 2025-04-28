@@ -58,7 +58,7 @@ export default function SignInPage() {
         onSuccess: () => {
           form.reset();
           toast.success("Sign in success");
-          router.push("/dashboard");
+          router.push("/");
           router.refresh();
         },
         onError: () => {

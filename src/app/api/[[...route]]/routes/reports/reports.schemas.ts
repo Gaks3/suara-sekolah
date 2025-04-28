@@ -27,6 +27,13 @@ export const listQueryParamsSchema = z.object({
     }),
 })
 
-export const insertReportSchema = ReportSchema.extend({
+export const insertReportSchema = ReportSchema.omit(
+  {
+    createdAt: true, 
+    updatedAt: true, 
+    userId: true, 
+    id: true
+  }
+).extend({
   image: imageSchema.optional(),
 })
