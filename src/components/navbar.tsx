@@ -113,7 +113,7 @@ const Navbar = ({ session }: NavbarProps) => {
                 </button>
               </Link>
               <Link href="/sign-up">
-                <button className="border-2 text-sm border-blue-700 bg-white hover:text-white text-primary px-4 py-1.5 rounded-lg hover:bg-primary transition">
+                <button className="border-2 text-sm border-primary bg-white hover:text-white text-primary px-4 py-1.5 rounded-lg hover:bg-primary transition">
                   Daftar
                 </button>
               </Link>
