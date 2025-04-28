@@ -1,17 +1,15 @@
-import type { AuthEndpoint } from "better-auth/plugins"
+import { auth } from "./lib/auth";
+import configureOpenAPI from "./lib/configure-open-api";
+import createApp from "./lib/create-app";
+import users from "./routes/users/users.index";
+import reports from "./routes/reports/reports.index";
 
-import { auth } from "./lib/auth"
-import configureOpenAPI from "./lib/configure-open-api"
-import createApp from "./lib/create-app"
-import users from "./routes/users/users.index"
-import reports from "./routes/reports/reports.index"
+const app = createApp().basePath("/api").route("/", users).route("/", reports);
 
-const app = createApp().basePath("/api").route("/", users).route("/", reports)
+configureOpenAPI(app);
 
-configureOpenAPI(app)
+app.on(["POST", "GET"], "/auth/**", (c) => auth.handler(c.req.raw));
 
-app.on(["POST", "GET"], "/auth/**", (c) => auth.handler(c.req.raw))
+export type AppType = typeof app;
 
-export type AppType = typeof app & AuthEndpoint
-
-export default app
+export default app;

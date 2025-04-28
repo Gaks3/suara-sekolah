@@ -1,17 +1,17 @@
-import { z } from "zod"
+import { z } from "zod";
 
-import { UserSchema } from "../../../../../../prisma/generated/zod/index"
-import { imageSchema } from "../../lib/schemas/image-schema"
+import { UserSchema } from "../../../../../../prisma/generated/zod/index";
+import { imageSchema } from "../../lib/schemas/image-schema";
 
-export const containsUppercase = (str: string) => /[A-Z]/.test(str)
+export const containsUppercase = (str: string) => /[A-Z]/.test(str);
 
-export const containsNumber = (str: string) => /\d/.test(str)
+export const containsNumber = (str: string) => /\d/.test(str);
 
 export const containsSpecialChars = (str: string) => {
-  const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+  const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
 
-  return specialChars.test(str)
-}
+  return specialChars.test(str);
+};
 
 export const passwordSchema = z.string().superRefine((value, ctx) => {
   if (value.length < 8) {
@@ -19,9 +19,9 @@ export const passwordSchema = z.string().superRefine((value, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "Must be 8 or more characters long",
       fatal: true,
-    })
+    });
 
-    return z.NEVER
+    return z.NEVER;
   }
 
   if (!containsUppercase(value)) {
@@ -29,9 +29,9 @@ export const passwordSchema = z.string().superRefine((value, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "At least contains one uppercase letter",
       fatal: true,
-    })
+    });
 
-    return z.NEVER
+    return z.NEVER;
   }
 
   if (!containsNumber(value)) {
@@ -39,9 +39,9 @@ export const passwordSchema = z.string().superRefine((value, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "At least contains one number",
       fatal: true,
-    })
+    });
 
-    return z.NEVER
+    return z.NEVER;
   }
 
   if (!containsSpecialChars(value)) {
@@ -49,17 +49,87 @@ export const passwordSchema = z.string().superRefine((value, ctx) => {
       code: z.ZodIssueCode.custom,
       message: "At least contains one special characters (@, #, $, etc.)",
       fatal: true,
-    })
+    });
 
-    return z.NEVER
+    return z.NEVER;
   }
-})
+});
 
 export const insertUserSchema = UserSchema.pick({
   email: true,
   name: true,
   role: true,
-}).extend({
-  password: passwordSchema,
-  image: imageSchema.optional(),
+  nip: true,
+  nis: true,
+  phone: true,
 })
+  .extend({
+    password: passwordSchema,
+    image: imageSchema.optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.role === "guru" && typeof value.nip === "undefined")
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The field nip is required",
+        fatal: true,
+      });
+
+    if (value.role === "siswa" && typeof value.nis === "undefined")
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The field nis is required",
+        fatal: true,
+      });
+
+    if (
+      value.role === "karyawan" &&
+      typeof value.nis !== "undefined" &&
+      typeof value.nip === "undefined"
+    )
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please leave the nis and nip input blank",
+        fatal: true,
+      });
+  });
+
+export const updateUserSchema = UserSchema.pick({
+  email: true,
+  name: true,
+  role: true,
+  nip: true,
+  nis: true,
+  phone: true,
+})
+  .extend({
+    password: passwordSchema,
+    image: imageSchema.optional(),
+  })
+  .partial()
+  .superRefine((value, ctx) => {
+    if (value.role === "guru" && typeof value.nip === "undefined")
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The field nip is required",
+        fatal: true,
+      });
+
+    if (value.role === "siswa" && typeof value.nis === "undefined")
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The field nis is required",
+        fatal: true,
+      });
+
+    if (
+      value.role === "karyawan" &&
+      typeof value.nis !== "undefined" &&
+      typeof value.nip === "undefined"
+    )
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please leave the nis and nip input blank",
+        fatal: true,
+      });
+  });
