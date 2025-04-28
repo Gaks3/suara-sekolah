@@ -1,22 +1,22 @@
-import { createRoute, z } from "@hono/zod-openapi"
-import * as HTTPStatusCodes from "stoker/http-status-codes"
-import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers"
+import { createRoute, z } from "@hono/zod-openapi";
+import * as HTTPStatusCodes from "stoker/http-status-codes";
+import { jsonContent } from "stoker/openapi/helpers";
 
 import {
   ReportSchema,
   UserSchema,
-} from "../../../../../../prisma/generated/zod"
-import { authMiddleware } from "../../middlewares/auth"
-import { insertReportSchema, listQueryParamsSchema } from "./reports.schemas"
-import { IdParamsSchema } from "stoker/openapi/schemas"
+} from "../../../../../../prisma/generated/zod";
+import { authMiddleware } from "../../middlewares/auth";
+import { insertReportSchema, listQueryParamsSchema } from "./reports.schemas";
+import { IdParamsSchema } from "stoker/openapi/schemas";
 import {
   badRequestSchema,
   forbiddenSchema,
   notFoundSchema,
   unauthorizeSchema,
-} from "../../lib/schemas/constants"
+} from "../../lib/schemas/constants";
 
-const tags = ["Reports"]
+const tags = ["Reports"];
 
 export const list = createRoute({
   path: "/reports",
@@ -31,9 +31,12 @@ export const list = createRoute({
       z.object({ data: z.array(ReportSchema) }),
       "The list of reports"
     ),
-    [HTTPStatusCodes.UNAUTHORIZED]: jsonContent(forbiddenSchema, "Forbidden"),
+    [HTTPStatusCodes.UNAUTHORIZED]: jsonContent(
+      unauthorizeSchema,
+      "Unauthorized"
+    ),
   },
-})
+});
 
 export const getOne = createRoute({
   path: "/reports/{id}",
@@ -59,7 +62,7 @@ export const getOne = createRoute({
       "Unauthorized"
     ),
   },
-})
+});
 
 export const create = createRoute({
   path: "/reports",
@@ -69,7 +72,7 @@ export const create = createRoute({
     body: {
       content: {
         "multipart/form-data": {
-          schema: insertReportSchema,
+          schema: insertReportSchema.omit({ status: true }),
         },
       },
       required: true,
@@ -91,7 +94,7 @@ export const create = createRoute({
       "Unauthorized"
     ),
   },
-})
+});
 
 export const patch = createRoute({
   path: "/reports/{id}",
@@ -102,7 +105,7 @@ export const patch = createRoute({
     body: {
       content: {
         "multipart/form-data": {
-          schema: insertReportSchema,
+          schema: insertReportSchema.partial(),
         },
       },
       required: true,
@@ -121,7 +124,7 @@ export const patch = createRoute({
     ),
     [HTTPStatusCodes.FORBIDDEN]: jsonContent(forbiddenSchema, "Forbidden"),
   },
-})
+});
 
 export const remove = createRoute({
   path: "/reports/{id}",
@@ -141,10 +144,10 @@ export const remove = createRoute({
     ),
     [HTTPStatusCodes.FORBIDDEN]: jsonContent(forbiddenSchema, "Forbidden"),
   },
-})
+});
 
-export type ListRoute = typeof list
-export type GetOneRoute = typeof getOne
-export type CreateRoute = typeof create
-export type PatchRoute = typeof patch
-export type RemoveRoute = typeof remove
+export type ListRoute = typeof list;
+export type GetOneRoute = typeof getOne;
+export type CreateRoute = typeof create;
+export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

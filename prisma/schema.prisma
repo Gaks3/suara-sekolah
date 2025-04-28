@@ -93,31 +93,32 @@ model Verification {
 }
 
 model Report {
-  id         Int              @id @default(autoincrement())
-  title      String
-  content    String
-  userId     String
-  user       User             @relation(references: [id], fields: [userId])
-  anonym     Boolean?         @default(false)
-  image      String?
-  category   ReportCategory
-  status     ReportStatus     @default(VERIFICATION_PROCESS)
-  department ReportDepartment
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  id           Int              @id @default(autoincrement())
+  title        String
+  content      String
+  userId       String
+  user         User             @relation(references: [id], fields: [userId])
+  anonym       Boolean?         @default(false)
+  image        String?
+  category     ReportCategory
+  status       ReportStatus     @default(PROSES_VERIFIKASI)
+  department   ReportDepartment
+  incidentDate DateTime         @default(now())
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 }
 
 enum ReportCategory {
-  COMPLAINT
-  ASPIRATION
-  INFORMATION_REQUEST
+  PENGADUAN
+  ASPIRASI
+  PERMINTAAN_INFORMASI
 }
 
 enum ReportStatus {
-  VERIFICATION_PROCESS
-  VERIFIED
-  FOLLOW_UP
-  COMPLETED
+  PROSES_VERIFIKASI
+  TERVERIFIKASI
+  TINDAK_LANJUT
+  SELESAI
 }
 
 enum ReportDepartment {
