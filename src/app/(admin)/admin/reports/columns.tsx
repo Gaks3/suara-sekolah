@@ -78,7 +78,7 @@ export const CategoryBadge = ({
       category === "PENGADUAN"
         ? "bg-red-50 text-red-700 border-red-200"
         : category === "ASPIRASI"
-        ? "bg-blue-50 text-blue-700 border-green-200"
+        ? "bg-blue-50 text-primary border-green-200"
         : "bg-gray-50 text-gray-700 border-gray-200"
     )}
   >
@@ -94,7 +94,7 @@ export const StatusBadge = ({ status }: { status: DataType["status"] }) => (
       status === "PROSES_VERIFIKASI"
         ? "bg-yellow-50 text-yellow-700 border-yellow-200"
         : status === "TERVERIFIKASI"
-        ? "bg-blue-50 text-blue-700 border-blue-200"
+        ? "bg-blue-50 text-primary border-blue-200"
         : status === "TINDAK_LANJUT"
         ? "bg-red-50 text-red-700 border-red-200"
         : "bg-green-50 text-green-700 border-red-200"

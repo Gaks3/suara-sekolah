@@ -18,6 +18,7 @@ import {
 import { usePathname } from "next/navigation"
 import { items } from "./item-admin-sidebar"
 import { NavUser } from "./nav-user"
+import Image from "next/image"
 
 export function AdminSidebar({
   user,
@@ -38,11 +39,11 @@ export function AdminSidebar({
             size="lg"
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
-            <div className="flex items-center justify-center rounded-lg aspect-square size-8 bg-sidebar-primary text-sidebar-primary-foreground">
-              <Gamepad2Icon className="size-4" />
+            <div className="flex items-center justify-center rounded-lg aspect-square size-8 text-sidebar-primary-foreground relative">
+              <Image src="/logo.png" fill alt="logo" />
             </div>
             <div className="grid flex-1 text-sm leading-tight text-left">
-              <span className="font-semibold truncate">PlayX</span>
+              <span className="font-semibold truncate">Suara Sekolah</span>
               <span className="text-xs truncate">Admin Dashboard</span>
             </div>
           </SidebarMenuButton>

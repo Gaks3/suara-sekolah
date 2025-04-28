@@ -20,7 +20,7 @@ const Main = () => {
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mb-16">
       <div className="p-8">
         <div className="flex items-start mb-6">
-          <MessageSquare className="text-blue-600 mr-4 h-8 w-8 flex-shrink-0 mt-1" />
+          <MessageSquare className="text-primary mr-4 h-8 w-8 flex-shrink-0 mt-1" />
           <div>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
               Suara Sekolah

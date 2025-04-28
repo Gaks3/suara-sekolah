@@ -158,7 +158,7 @@ export default function SignInPage() {
 
               <Button
                 type="submit"
-                className="w-full py-2.5 md:py-3 rounded-lg bg-blue-700 hover:bg-blue-700/90 text-white font-medium flex items-center justify-center"
+                className="w-full py-2.5 md:py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium flex items-center justify-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -178,7 +178,7 @@ export default function SignInPage() {
           Belum punya akun?{" "}
             <Link
               href="/sign-up"
-              className="text-blue-700 font-medium hover:underline"
+              className="text-primary font-medium hover:underline"
             >
               Daftar
             </Link>

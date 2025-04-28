@@ -77,7 +77,7 @@ const Carakerja = () => {
             title="Evaluasi dan Peningkatan"
             description="Kami secara berkala mengevaluasi laporan yang masuk untuk mengidentifikasi pola dan melakukan perbaikan sistemik untuk mencegah masalah serupa terulang."
             icon={<BarChart className="h-8 w-8 text-white" />}
-            iconBgColor="bg-blue-700"
+            iconBgColor="bg-primary"
             isLeft={false}
             delay={0.6}
           />
@@ -111,7 +111,7 @@ const WorkflowItem = ({ title, description, icon, iconBgColor, isLeft, delay }: 
             transition={{ duration: 0.7, delay }}
           >
             <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-              <h3 className="font-semibold text-lg mb-2 text-blue-700">{title}</h3>
+              <h3 className="font-semibold text-lg mb-2 text-primary">{title}</h3>
               <p className="text-gray-600">{description}</p>
             </div>
           </motion.div>
@@ -133,7 +133,7 @@ const WorkflowItem = ({ title, description, icon, iconBgColor, isLeft, delay }: 
             transition={{ duration: 0.7, delay }}
           >
             <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-              <h3 className="font-semibold text-lg mb-2 text-blue-700">{title}</h3>
+              <h3 className="font-semibold text-lg mb-2 text-primary">{title}</h3>
               <p className="text-gray-600">{description}</p>
             </div>
           </motion.div>

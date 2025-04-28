@@ -1,82 +1,162 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { CalendarIcon, Upload } from "lucide-react"
-import { format } from "date-fns"
-import { id } from "date-fns/locale"
+import type React from "react";
+import { useRef, useState } from "react";
+import {
+  CalendarIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { APIClient } from "@/lib/api-client";
+import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { ReportSchema } from "../../../prisma/generated/zod";
+import { imageSchema } from "@/app/api/[[...route]]/lib/schemas/image-schema";
+import { ReportDepartment } from "@prisma/client";
 
 const classificationOptions = [
-  { id: "pengaduan", label: "Pengaduan" },
-  { id: "aspirasi", label: "Aspirasi" },
-  { id: "informasi", label: "Informasi" },
-]
+  { id: "PENGADUAN", label: "Pengaduan" },
+  { id: "ASPIRASI", label: "Aspirasi" },
+  { id: "PERMINTAAN_INFORMASI", label: "Informasi" },
+];
+
+const insertReportSchema = ReportSchema.omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+  status: true
+}).extend({
+  anonym: z.coerce.boolean(),
+  image: imageSchema.optional(),
+});
+
+type InsertReportSchema = z.infer<typeof insertReportSchema>;
 
 export default function FormLaporan() {
-  const [date, setDate] = useState<Date>()
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [selectedClassification, setSelectedClassification] = useState<string | null>(null)
-  const [department, setDepartment] = useState<string | null>(null)
+  const departments = Object.values(ReportDepartment)
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const form = useForm<InsertReportSchema>({
+    resolver: zodResolver(insertReportSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+    },
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null
-    setSelectedFile(file)
-    setPreviewUrl(file ? URL.createObjectURL(file) : null)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    const form = e.target as HTMLFormElement;
-  
-    // nilai tujuan
-    const department = form.tujuan?.value?.toUpperCase();
-  
-    const classificationMap: Record<string, string> = {
-      pengaduan: "COMPLAINT",
-      aspirasi: "ASPIRATION",
-      informasi: "INFORMATION",
-    };
-  
-    // tampil di console log
-    const dataToSend = {
-      category: classificationMap[selectedClassification ?? ""] ?? null,
-      status: "VERIFICATION_PROCESS",
-      department: department || null,
-      title: form.judul.value,
-      content: form.isi.value,
-      userId: "1", // data dumy
-      anonym: false, 
-      image: selectedFile ? selectedFile.name : null,
-    };
-  
-    // debug
-    console.log("Data yang akan dikirim ke API:", dataToSend);
-  
-    // reset form
-    form.reset();
-    setDate(undefined);
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setSelectedClassification(null);
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
   };
-  
+
+  const processFile = (file: File) => {
+    form.setValue("image", file);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    form.resetField("image");
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleSubmit = async (values: InsertReportSchema) => {
+    try {
+      const res = await APIClient.api.reports.$post(
+        {
+          form: {
+            ...values,
+          },
+        },
+        {
+          init: {
+            credentials: "include",
+          },
+        }
+      );
+
+      if (res.status === 201) {
+        toast.success("Laporan berhasil dikirim!");
+        form.reset()
+      } else {
+        toast.error("Gagal mengirim laporan!");
+      }
+    } catch (error) {
+      toast.error("Terjadi kesalahan saat mengirim laporan!");
+    }
+  };
 
   return (
     <Card className="w-full max-w-[600px] mx-auto border-2 mt-6 mb-6 md:mt-10 md:mb-10 px-2 sm:px-4 md:px-6">
       <CardHeader className="text-center px-3 sm:px-4 md:px-6">
-        <CardTitle className="text-xl sm:text-1xl font-bold bg-blue-600 py-1.5 text-white rounded-lg">
+        <CardTitle className="text-xl sm:text-1xl font-bold bg-primary py-1.5 text-white rounded-lg">
           Sampaikan Laporan Anda Disini
         </CardTitle>
         <p className="text-xs pt-2 pb-2">
@@ -86,130 +166,229 @@ export default function FormLaporan() {
       </CardHeader>
 
       <CardContent className="px-3 sm:px-4 md:px-6">
-        <form onSubmit={handleSubmit} className="space-y-6 pt-2">
-          <div className="space-y-2">
-            <Label htmlFor="klasifikasi" className="text-black">
-              Klasifikasi Laporan
-            </Label>
-            <div className="flex flex-wrap gap-x-4 gap-y-2">
-              {classificationOptions.map((option) => (
-                <div key={option.id} className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id={`klasifikasi-${option.id}`}
-                    name="klasifikasi"
-                    value={option.id}
-                    checked={selectedClassification === option.id}
-                    onChange={() => setSelectedClassification(option.id)}
-                    className="accent-blue-600"
-                    required
-                  />
-                  <Label htmlFor={`klasifikasi-${option.id}`} className="text-sm font-normal cursor-pointer">
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6 pt-2"
+          >
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Klasifikasi Laporan</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="flex flex-wrap gap-x-4 gap-y-2"
+                      >
+                        {classificationOptions.map((option, index) => (
+                          <FormItem key={index} className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value={option.id} />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal cursor-pointer">
+                              {option.label}
+                            </FormLabel>
+                          </FormItem>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="judul" className="text-black">Judul Laporan</Label>
-            <Input id="judul" placeholder="Masukkan judul laporan" required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="isi" className="text-black">Isi Laporan</Label>
-            <Textarea id="isi" placeholder="Masukkan isi laporan secara detail" className="min-h-[120px]" required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tanggal" className="text-black">Tanggal</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP", { locale: id }) : "Pilih tanggal"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tujuan" className="text-black">Tujuan</Label>
-            <Select value={department || ""} onValueChange={(val) => setDepartment(val)} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih tujuan laporan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="guru">Guru</SelectItem>
-                <SelectItem value="tu">TU</SelectItem>
-                <SelectItem value="kesiswaan">Kesiswaan</SelectItem>
-                <SelectItem value="bk">BK</SelectItem>
-                <SelectItem value="kepala-sekolah">Kepala Sekolah</SelectItem>
-                <SelectItem value="kebersihan">Badan Kebersihan</SelectItem>
-                <SelectItem value="keamanan">Keamanan</SelectItem>
-                <SelectItem value="sarpras">SarPras</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="foto" className="text-black">Upload Foto</Label>
-            <div className="grid gap-4">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor="foto"
-                  className="flex flex-col items-center justify-center w-full h-24 sm:h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted"
-                >
-                  <div className="flex flex-col items-center justify-center pt-3 pb-3 sm:pt-5 sm:pb-6">
-                    <Upload className="w-6 h-6 sm:w-8 sm:h-8 mb-1 sm:mb-2 text-muted-foreground" />
-                    <p className="mb-1 sm:mb-2 text-xs sm:text-sm text-muted-foreground text-center">
-                      <span className="font-semibold">Klik untuk upload</span>{" "}
-                      <span className="hidden sm:inline">atau drag and drop</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground hidden sm:block">PNG, JPG atau JPEG (Maks. 10MB)</p>
-                  </div>
-                  <Input id="foto" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                </label>
-              </div>
-
-              {previewUrl && (
-                <div className="relative mt-2">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full h-auto max-h-48 object-contain rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setSelectedFile(null)
-                      setPreviewUrl(null)
-                      const fileInput = document.getElementById("foto") as HTMLInputElement
-                      if (fileInput) fileInput.value = ""
-                    }}
-                  >
-                    Hapus
-                  </Button>
-                </div>
-              )}
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Judul Laporan</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Masukkan judul laporan"
+                        required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
 
-          <Button type="submit" className="w-full bg-blue-700 text-white hover:bg-blue-500">
-            Kirim Laporan
-          </Button>
-        </form>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Isi Laporan</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Masukkan isi laporan"
+                        required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="incidentDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tanggal</FormLabel>
+                    <FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value
+                              ? format(field.value, "PPP", { locale: id })
+                              : "Pilih tanggal"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                    onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tujuan</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      required
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Pilih tujuan laporan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((department, index) => (
+                        <SelectItem key={index} value={department}>{department.toLowerCase().replaceAll('_', " ").split(" ").map((value) => value.at(0)?.toUpperCase() + value.slice(1)).join(" ")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Upload Foto</FormLabel>
+                    <>
+                      {!imagePreview ? (
+                        <div
+                          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors ${
+                            isDragging ? "border-primary bg-primary/10" : ""
+                          }`}
+                          onClick={() => fileInputRef.current?.click()}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                        >
+                          <div className="flex flex-col items-center justify-center pt-3 pb-3 sm:pt-5 sm:pb-6">
+                            <UploadIcon className="w-6 h-6 sm:w-8 sm:h-8 mb-1 sm:mb-2 text-muted-foreground" />
+                            <p className="mb-1 sm:mb-2 text-xs sm:text-sm text-muted-foreground text-center">
+                              <span className="font-semibold">
+                                Klik untuk upload
+                              </span>{" "}
+                              <span className="hidden sm:inline">
+                                atau drag and drop
+                              </span>
+                            </p>
+                            <p className="text-xs text-muted-foreground hidden sm:block">
+                              PNG, JPG atau JPEG (Maks. 10MB)
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="hidden"
+                            />
+                          </FormControl>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div className="aspect-square w-full overflow-hidden rounded-lg">
+                            <img
+                              src={
+                                imagePreview ||
+                              '/placeholder.svg?height=350&width=350'
+                              }
+                              alt="Foto"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                            onClick={handleRemoveImage}
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary text-white hover:bg-blue-500"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Mengirim..." : "Kirim Laporan"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

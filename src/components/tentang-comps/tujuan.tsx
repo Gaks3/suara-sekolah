@@ -9,8 +9,8 @@ const Tujuan = () => {
   return (
     <div className="max-w-4xl mx-auto mb-16">
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold text-blue-700 mb-4">Tujuan Kami</h2>
-        <div className="w-16 h-1 bg-blue-700 mx-auto"></div>
+        <h2 className="text-3xl font-bold text-primary mb-4">Tujuan Kami</h2>
+        <div className="w-16 h-1 bg-primary mx-auto"></div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -28,7 +28,7 @@ const Tujuan = () => {
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md flex">
-          <Users className="text-blue-700 mr-4 h-6 w-6 flex-shrink-0 mt-1" />
+          <Users className="text-primary mr-4 h-6 w-6 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold text-lg mb-2">Partisipasi Aktif</h3>
             <p className="text-gray-600">

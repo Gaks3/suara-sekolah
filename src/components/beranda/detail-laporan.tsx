@@ -16,7 +16,7 @@ const DetailLaporan = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
                 {laporanInstansi.map((item, index) => (
                     <div key={index} className="bg-white rounded-xl shadow-md p-6 text-center">
-                        <div className="text-3xl font-bold text-blue-700">{item.jumlah}</div>
+                        <div className="text-3xl font-bold text-primary">{item.jumlah}</div>
                         <div className="mt-2 text-gray-600 font-medium">{item.nama}</div>
                     </div>
                 ))}

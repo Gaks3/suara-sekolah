@@ -88,7 +88,7 @@ export default async function ReportsPage({
                 {reportData.image && (
                   <div className="overflow-hidden rounded-md border">
                     <Image
-                      src={reportData.image}
+                      src={`/${reportData.image}`}
                       alt="Report Image"
                       width={500}
                       height={300}

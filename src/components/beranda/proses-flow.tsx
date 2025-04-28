@@ -8,7 +8,7 @@ export default function ProsesFlow() {
           <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-full p-6 flex items-center justify-center w-24 h-24 shadow-lg">
             <RefreshCw className="w-10 h-10 text-white" />
           </div>
-          <h3 className="font-semibold text-lg mt-4 text-blue-600">
+          <h3 className="font-semibold text-lg mt-4 text-primary">
             Proses Verifikasi
           </h3>
           <p className="text-center max-w-[250px] mt-2">
@@ -45,7 +45,7 @@ export default function ProsesFlow() {
         </div>
       </div>
       <div className="flex justify-center mt-6">
-        <a href="/tentang-kami" className="px-4 py-2 rounded-lg border-2 border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white transition">
+        <a href="/tentang-kami" className="px-4 py-2 rounded-lg border-2 border-blue-700 text-primary hover:bg-primary hover:text-white transition">
           Pelajari Lebih Lanjut
         </a>
       </div>
