@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { UserSchema } from "../../../../../../prisma/generated/zod/index";
 import { imageSchema } from "../../lib/schemas/image-schema";
+import { UserRole } from "@prisma/client";
 
 export const containsUppercase = (str: string) => /[A-Z]/.test(str);
 
@@ -95,14 +96,14 @@ export const insertUserSchema = UserSchema.pick({
   });
 
 export const signUpSchema = UserSchema.pick({
-  email: true,
-  name: true,
-  role: true,
   nip: true,
   nis: true,
-  phone: true,
 })
   .extend({
+    name: z.string().trim().min(1, "The field name is required"),
+    email: z.string().email(),
+    phone: z.string().trim().min(1, "The field is required"),
+    role: z.enum([UserRole.guru, UserRole.karyawan, UserRole.siswa]),
     password: passwordSchema,
     nip: z.string().nullable().optional(),
     nis: z.string().nullable().optional(),
