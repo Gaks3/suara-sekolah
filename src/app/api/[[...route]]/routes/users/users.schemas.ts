@@ -105,32 +105,36 @@ export const signUpSchema = UserSchema.pick({
   .extend({
     password: passwordSchema,
     nip: z.string().nullable().optional(),
-    nis: z.string().nullable().optional()
+    nis: z.string().nullable().optional(),
   })
   .superRefine((value, ctx) => {
-    if (value.role === "guru" && typeof value.nip === "undefined")
+    if (value.role === "guru" && value.nip?.trim().length === 0)
       return ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "The field nip is required",
         fatal: true,
+        path: ["nip"],
       });
 
-    if (value.role === "siswa" && typeof value.nis === "undefined")
+    if (value.role === "siswa" && value.nis?.trim().length === 0) {
       return ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "The field nis is required",
         fatal: true,
+        path: ["nis"],
       });
+    }
 
     if (
       value.role === "karyawan" &&
-      typeof value.nis !== "undefined" &&
-      typeof value.nip !== "undefined"
+      value.nis?.trim().length !== 0 &&
+      value.nip?.trim().length !== 0
     )
       return ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Please leave the nis and nip input blank",
         fatal: true,
+        path: ["nis", "nip"],
       });
   });
 
